@@ -3,45 +3,33 @@ package com.example.systemaplikacia100
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.systemaplikacia100.ui.theme.SystemAplikacia100Theme
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+
+// TU sú importy tvojich vlastných balíčkov: sled za balíčkom “com.example.systemaplikacia100”
+import com.example.systemaplikacia100.ui.navigation.NavGraph
+import com.example.systemaplikacia100.ui.theme.SystemAplikacia100Theme  // ak je tvoja téma takto pomenovaná
+import com.example.systemaplikacia100.viewmodel.AuthViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             SystemAplikacia100Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Jergus",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                val navController = rememberNavController()
+                val authViewModel: AuthViewModel = viewModel()
+
+                // Skontroluje, či užívateľ je prihlásený (FirebaseAuth)
+                val startDest = if (Firebase.auth.currentUser != null) "home" else "login"
+
+                NavGraph(
+                    navController = navController,
+                    startDestination = startDest,
+                    authViewModel = authViewModel
+                )
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SystemAplikacia100Theme {
-        Greeting("Jergus")
     }
 }
