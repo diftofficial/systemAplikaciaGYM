@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "177214816676",
+    "project_id": "systemnaspravugymu",
+    "storage_bucket": "systemnaspravugymu.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:177214816676:android:3aae4a9c49a272b2f40131",
+        "android_client_info": {
+          "package_name": "com.example.systemaplikacia100"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuiTZBUSDlr8H2PhMLLzSZSkVXB3RzIHI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
