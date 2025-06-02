@@ -12,7 +12,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
 @Composable
-fun HomeScreen() {
+fun trainerScreen() {
     // Získame aktuálne prihláseného Firebase používateľa
     val currentUser = Firebase.auth.currentUser
 
@@ -22,12 +22,12 @@ fun HomeScreen() {
     ) {
         if (currentUser != null) {
             Text(
-                text = "Vitajte, ${currentUser.email}! 🎉",
+                text = "Vitajte trainer, ${currentUser.email}! 🎉",
                 style = MaterialTheme.typography.headlineMedium
             )
         } else {
             Text(
-                text = "Vitajte v aplikácii!",
+                text = "Vitajte trainer v aplikácii!",
                 style = MaterialTheme.typography.headlineMedium
             )
         }

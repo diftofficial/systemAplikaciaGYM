@@ -14,36 +14,35 @@ import com.example.systemaplikacia100.viewmodel.AuthViewModel
 import com.example.systemaplikacia100.viewmodel.AuthUiState
 
 @Composable
-fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
-    // Stavové premenné pre vstupné polia
+fun LoginScreen(
+    navController: NavController,
+    viewModel: AuthViewModel
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
-    // Odoberáme stav z AuthViewModel-u (Compose kompatibilný StateFlow -> State)
     val uiState: AuthUiState by viewModel.uiState.collectAsState()
 
-    // Ak je používateľ úspešne prihlásený, navigujeme na hlavnú obrazovku
+    // Po úspešnom login-e presmerujeme na "splash"
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
-            // Vyčistenie backstacku: odstránenie LoginScreen (prípadne celej grafu auth) z histórie
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true }   // odstráni "login" z backstacku:contentReference[oaicite:12]{index=12}
+            navController.navigate("splash") {
+                // odstránime login zo spätného zásobníka
+                popUpTo("login") { inclusive = true }
             }
-            viewModel.resetState()  // vynulujeme stav, aby sa neuložil chybový status do ďalšej obrazovky
+            viewModel.resetState()
         }
     }
 
-    // UI rozloženie obrazovky
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column(modifier = Modifier
-            .fillMaxWidth(0.8f)  // stĺpec bude zaberať 80% šírky obrazovky
+            .fillMaxWidth(0.8f)
         ) {
             Text(text = "Prihlásenie", style = MaterialTheme.typography.headlineLarge)
-            Spacer(modifier = Modifier.height(32.dp))
-            // TextField pre Email
+            Spacer(modifier = Modifier.height(16.dp))
+
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -51,41 +50,47 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            // TextField pre Heslo
+            Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Heslo") },
                 singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),  // skrytie hesla
+                visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(24.dp))
-            // Tlačidlo "Prihlásiť sa"
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
-                onClick = { viewModel.login(email.trim(), password) },
+                onClick = {
+                    viewModel.login(email.trim(), password)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading && email.isNotBlank() && password.isNotBlank()
             ) {
                 Text("Prihlásiť sa")
             }
-            // Odkaz na registračnú obrazovku
+
             TextButton(
                 onClick = {
-                    viewModel.resetState()  // vyčisti prípadné staré chyby pred prechodom
-                    navController.navigate("register")
+                    viewModel.resetState()
+                    navController.navigate("register") {
+                        popUpTo("login") { inclusive = false }
+                    }
                 },
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text("Nemáte účet? Zaregistrujte sa")
+                Text("Nemáte účet? Registrujte sa")
             }
 
-            // Zobrazenie priebehu alebo chyby, ak existujú
             if (uiState.isLoading) {
+                Spacer(modifier = Modifier.height(16.dp))
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             }
+
             uiState.errorMessage?.let { error ->
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = error,
                     color = MaterialTheme.colorScheme.error,

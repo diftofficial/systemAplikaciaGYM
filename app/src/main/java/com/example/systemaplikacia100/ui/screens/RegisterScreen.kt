@@ -1,7 +1,5 @@
 package com.example.systemaplikacia100.ui.screens
 
-
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,14 +18,15 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
-    var role by remember { mutableStateOf("") }
+    // Rolu už neukladáme z UI, default v kóde bude “user”
+    val defaultRole = "user"
 
     val uiState: AuthUiState by viewModel.uiState.collectAsState()
 
-    // Po úspešnej registrácii navigovať na hlavnú obrazovku (rovnako ako v LoginScreen)
+    // Po úspešnej registrácii navigovať na hlavnú obrazovku
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
-            navController.navigate("home") {
+            navController.navigate("userHome") {
                 popUpTo("login") { inclusive = true }
             }
             viewModel.resetState()
@@ -38,11 +37,13 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel) {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Column(modifier = Modifier
-            .fillMaxWidth(0.8f)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
         ) {
             Text(text = "Registrácia", style = MaterialTheme.typography.headlineLarge)
             Spacer(modifier = Modifier.height(16.dp))
+
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
@@ -51,6 +52,7 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel) {
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -59,6 +61,7 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel) {
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -68,40 +71,39 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel) {
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = phone,
                 onValueChange = { phone = it },
-                label = { Text("Telefón") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = role,
-                onValueChange = { role = it },
-                label = { Text("Rola") },
+                label = { Text("Telefón (voliteľné)") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
+
             Button(
                 onClick = {
-                    // Trim pri políčkach pre istotu
+                    // Pri registrácii posielame defaultRole = "user"
                     viewModel.register(
-                        name.trim(), email.trim(), password,
-                        phone.trim(), role.trim()
+                        name.trim(),
+                        email.trim(),
+                        password,
+                        phone.trim(),
+                        defaultRole
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
+                // Telefón je už voliteľné, takže ho nepotrebujeme overovať v enabled.
                 enabled = !uiState.isLoading && name.isNotBlank()
                         && email.isNotBlank() && password.isNotBlank()
             ) {
                 Text("Vytvoriť účet")
             }
+
             TextButton(
                 onClick = {
                     viewModel.resetState()
-                    navController.popBackStack()  // vrátiť sa späť na LoginScreen
+                    navController.popBackStack()  // Vrátiť sa späť na LoginScreen
                 },
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
@@ -109,8 +111,10 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel) {
             }
 
             if (uiState.isLoading) {
+                Spacer(modifier = Modifier.height(16.dp))
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             }
+
             uiState.errorMessage?.let { error ->
                 Text(
                     text = error,

@@ -1,20 +1,20 @@
+
+// AuthViewModel.kt
 package com.example.systemaplikacia100.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
-import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
-import com.google.firebase.firestore.FirebaseFirestoreException
-import com.example.systemaplikacia100.data.repository.AuthRepository
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
-/** UI stav pre autentifikačné operácie */
 data class AuthUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
@@ -22,106 +22,101 @@ data class AuthUiState(
 )
 
 class AuthViewModel : ViewModel() {
+    private val auth = FirebaseAuth.getInstance()
+    private val db = FirebaseFirestore.getInstance()
 
-    private val authRepo = AuthRepository()
-
-    // StateFlow pre stav UI, defaultne žiadna chyba a nič sa nedeje
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState
 
-    /**
-     * Registrácia nového používateľa cez AuthRepository.
-     *
-     * @param name     Meno používateľa
-     * @param email    E-mail adresa
-     * @param password Heslo
-     * @param phone    Telefónne číslo
-     * @param role     Rola používateľa (napr. "Client", "Administrator" …)
-     */
-    fun register(name: String, email: String, password: String, phone: String, role: String) {
+    // Stav “role” – null znamená, že ešte nevieme rolu, po načítaní bude buď "user" alebo "admin"
+    private val _userRole = MutableStateFlow<String?>(null)
+    val userRole: StateFlow<String?> = _userRole
+
+    /** Registrácia */
+    fun register(name: String, email: String, password: String, phone: String, defaultRole: String) {
         viewModelScope.launch {
-            // nastavíme loading stav
             _uiState.update { it.copy(isLoading = true, errorMessage = null, isSuccess = false) }
-
             try {
-                // Tu sa reálne volá metóda repository, ktorá interné pracuje s FirebaseAuth
-                authRepo.registerUser(name, email, password, phone, role)
+                val credential = auth.createUserWithEmailAndPassword(email, password).await()
+                val firebaseUser = auth.currentUser
+                    ?: throw Exception("Užívateľ sa nenašiel po registrácii.")
 
-                // Ak nič nevhodné nevyhodilo výnimku, považujeme registráciu za úspešnú
+                // Uložíme displayName
+                val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                    .setDisplayName(name)
+                    .build()
+                firebaseUser.updateProfile(profileUpdates).await()
+
+                // Uložíme zvyšné údaje do Firestore (vlastná kolekcia "users")
+                val userData = mapOf(
+                    "uid" to firebaseUser.uid,
+                    "name" to name,
+                    "email" to email,
+                    "phone" to phone,
+                    "role" to "user" // pri registrácii vždy “user” – adminov budeme pridávať ručne v konzole Firestore
+                )
+                db.collection("users")
+                    .document(firebaseUser.uid)
+                    .set(userData)
+                    .await()
+
                 _uiState.update { it.copy(isLoading = false, errorMessage = null, isSuccess = true) }
-                Log.i("AuthViewModel", "Registrácia úspešná pre email=$email")
-
             } catch (e: Exception) {
-                // Vykonáme logovanie celej výnimky, aby sme pri debugovaní videli stacktrace
-                Log.e("AuthViewModel", "Registrácia zlyhala pre email=$email", e)
-
-                // Rozpoznáme niektoré špecifické Firebase Auth výnimky
-                val errorMsg = when (e) {
+                val errorMsg = when(e) {
                     is FirebaseAuthWeakPasswordException ->
                         "Heslo musí mať aspoň 6 znakov."
                     is FirebaseAuthInvalidCredentialsException ->
                         "Email má neplatný formát."
-                    is FirebaseAuthUserCollisionException ->
-                        "Používateľ s týmto emailom už existuje."
-                    is FirebaseAuthInvalidUserException ->
-                        "Účet s týmto emailom neexistuje." // teoreticky menej pravdepodobné pri registrácii
-                    is FirebaseFirestoreException ->
-                        // ak niekde v repo vytváraš dokumenty v Firestore a vyhodí sa FirestoreException
-                        "Chyba pri prístupe k databáze. Skúste to neskôr."
-                    else -> {
-                        // Ak je to sieťová chyba (napr. timeout, offline) alebo iná generická chyba
-                        e.message ?: "Registrácia zlyhala z neznámej príčiny."
-                    }
+                    else ->
+                        e.message ?: "Registrácia zlyhala."
                 }
-
-                // Nastavíme stav UI na error
                 _uiState.update { it.copy(isLoading = false, errorMessage = errorMsg, isSuccess = false) }
             }
         }
     }
 
-    /**
-     * Prihlásenie používateľa cez AuthRepository.
-     *
-     * @param email    E-mail adresa
-     * @param password Heslo
-     */
+    /** Prihlásenie */
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null, isSuccess = false) }
             try {
-                authRepo.loginUser(email, password)
-
+                auth.signInWithEmailAndPassword(email, password).await()
                 _uiState.update { it.copy(isLoading = false, errorMessage = null, isSuccess = true) }
-                Log.i("AuthViewModel", "Prihlásenie úspešné pre email=$email")
-
             } catch (e: Exception) {
-                Log.e("AuthViewModel", "Prihlásenie zlyhalo pre email=$email", e)
-
-                val errorMsg = when (e) {
+                val errorMsg = when(e) {
                     is FirebaseAuthInvalidUserException ->
                         "Účet s týmto emailom neexistuje."
                     is FirebaseAuthInvalidCredentialsException ->
                         "Nesprávne prihlasovacie údaje."
-                    is FirebaseAuthUserCollisionException ->
-                        "Používateľ s týmto emailom už existuje." // menej bežné pri login
-                    is FirebaseAuthWeakPasswordException ->
-                        "Heslo je príliš slabé." // menej bežné pri login
-                    is FirebaseFirestoreException ->
-                        "Chyba pri prístupe k databáze."
                     else ->
-                        e.message ?: "Prihlásenie zlyhalo z neznámej príčiny."
+                        e.message ?: "Prihlásenie zlyhalo."
                 }
-
                 _uiState.update { it.copy(isLoading = false, errorMessage = errorMsg, isSuccess = false) }
             }
         }
     }
 
-    /**
-     * Vynuluje stav UI (napr. po úspešnej akcii alebo pri odchode z obrazovky).
-     */
+    /** Načítanie roly (po úspešnom login‐e) */
+    fun fetchUserRole() {
+        viewModelScope.launch {
+            val uid = auth.currentUser?.uid ?: return@launch
+            try {
+                val doc = db.collection("users")
+                    .document(uid)
+                    .get()
+                    .await()
+                // Ak v dokumente "role" nenájdeme, predpokladáme "user"
+                _userRole.value = doc.getString("role") ?: "user"
+            } catch (_: Exception) {
+                // ak zlyhá načítanie, môžeme defaultne súhlasiť “user”
+                _userRole.value = "user"
+            }
+        }
+    }
+
+    /** Reset UI po navigácii/spätnom kroku */
     fun resetState() {
         _uiState.value = AuthUiState()
     }
 }
+
