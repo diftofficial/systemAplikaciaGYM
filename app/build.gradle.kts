@@ -54,7 +54,8 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+    //implementation(libs.androidx.material3)
+    implementation ("androidx.compose.material3:material3")
     implementation(libs.androidx.appcompat)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.firestore.ktx)
@@ -74,4 +75,14 @@ dependencies {
 
     implementation(platform("androidx.compose:compose-bom:2024.03.00"))
     implementation("androidx.compose.material:material-icons-extended")
+
+    // Compose Foundation (potrebné pre Box, Row, BasicTextField, Image a pod.)
+    implementation("androidx.compose.foundation:foundation:1.4.3")
+
+
+    // Compose BOM
+    //implementation (platform("androidx.compose:compose-bom:2024.01.00"))
+
+
+
 }

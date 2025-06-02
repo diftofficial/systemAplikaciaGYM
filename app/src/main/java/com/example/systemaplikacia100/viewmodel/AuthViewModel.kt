@@ -53,7 +53,8 @@ class AuthViewModel : ViewModel() {
                     "name" to name,
                     "email" to email,
                     "phone" to phone,
-                    "role" to "user" // pri registrácii vždy “user” – adminov budeme pridávať ručne v konzole Firestore
+                    "role" to "user", // pri registrácii vždy “user” – adminov budeme pridávať ručne v konzole Firestore
+                    "points" to 0
                 )
                 db.collection("users")
                     .document(firebaseUser.uid)
