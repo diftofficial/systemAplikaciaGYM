@@ -79,6 +79,7 @@ dependencies {
     // Compose Foundation (potrebné pre Box, Row, BasicTextField, Image a pod.)
     implementation("androidx.compose.foundation:foundation:1.4.3")
 
+    //implementation ("com.github.joel‐jdean:compose‐schedule:1.0.1")
 
     // Compose BOM
     //implementation (platform("androidx.compose:compose-bom:2024.01.00"))

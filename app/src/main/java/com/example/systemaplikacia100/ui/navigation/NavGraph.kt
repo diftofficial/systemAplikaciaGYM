@@ -43,7 +43,7 @@ fun NavGraph(
 
         // 3) Home obrazovky podľa rolí
         composable("userHome") {
-            userScreen()
+            userScreen(navController = navController)
         }
         composable("adminHome") {
             adminScreen(     // <-- tu už Editor nájde tvoj AdminScreen
@@ -52,7 +52,7 @@ fun NavGraph(
             )
         }
         composable("trainerHome") {
-            trainerScreen()  // nová obrazovka pre „trainer“
+            trainerScreen(navController = navController, authViewModel = authViewModel)  // nová obrazovka pre „trainer“
         }
     }
 }

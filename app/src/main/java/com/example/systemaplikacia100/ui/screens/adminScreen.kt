@@ -125,7 +125,7 @@ fun adminScreen(
             ) {
                 if (username.isEmpty()) {
                     Text(
-                        text = "meno_pouzivatela",
+                        text = "email_pouzivatela",
                         color = Color(0xFFAAAAAA),
                         fontSize = 14.sp
                     )
@@ -270,7 +270,7 @@ suspend fun addPointsToUser(username: String, pointsToAdd: Long) {
 
     // 1) Query podľa field "username"
     val querySnapshot = db.collection("users")
-        .whereEqualTo("name", username)
+        .whereEqualTo("email", username)
         .get()
         .await()
 
