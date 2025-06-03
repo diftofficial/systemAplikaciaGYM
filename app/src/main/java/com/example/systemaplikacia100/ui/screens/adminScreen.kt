@@ -13,6 +13,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,12 +47,12 @@ fun adminScreen(
     navController: NavController,
     authViewModel: AuthViewModel
 ) {
-    // Stavové premenné pre BasicTextField
-    var username by remember { mutableStateOf("") }
-    var credits by remember { mutableStateOf("") }
+
+    var username by rememberSaveable { mutableStateOf("") }
+    var credits by rememberSaveable { mutableStateOf("") }
 
     // Stav loadingu
-    var isLoading by remember { mutableStateOf(false) }
+    var isLoading by rememberSaveable { mutableStateOf(false) }
 
     // Potrebujeme kontext pre zobrazenie Toast
     val context = LocalContext.current

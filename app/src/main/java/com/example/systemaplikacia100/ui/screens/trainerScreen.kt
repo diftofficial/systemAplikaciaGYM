@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,16 +42,16 @@ fun trainerScreen(
     val context = LocalContext.current
 
     // Stavové premenne pre vstupy
-    var titleInput by remember { mutableStateOf("") }
-    var descriptionInput by remember { mutableStateOf("") }
-    var capacityInput by remember { mutableStateOf("") }
-    var priceInput by remember { mutableStateOf("") }
+    var titleInput by rememberSaveable { mutableStateOf("") }
+    var descriptionInput by rememberSaveable { mutableStateOf("") }
+    var capacityInput by rememberSaveable { mutableStateOf("") }
+    var priceInput by rememberSaveable { mutableStateOf("") }
 
     // Stav pre dátum a čas
-    var selectedDateTime by remember { mutableStateOf<Calendar?>(null) }
+    var selectedDateTime by rememberSaveable { mutableStateOf<Calendar?>(null) }
 
     // Stav pri ukladaní
-    var isSaving by remember { mutableStateOf(false) }
+    var isSaving by rememberSaveable { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
 
