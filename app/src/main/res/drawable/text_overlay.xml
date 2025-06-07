@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- polopriehľadná biela (#80 = 50% opacity) -->
+    <solid android:color="#80000000"/>
+
+    <!-- zaoblené rohy -->
+    <corners android:radius="8dp"/>
+
+    <!-- voliteľne: tenký biely obrys -->
+    <!--<stroke
+        android:width="1dp"
+        android:color="#CCFFFFFF" />-->
+</shape>

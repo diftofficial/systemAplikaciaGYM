@@ -34,6 +34,8 @@ import java.text.SimpleDateFormat
 import java.time.ZoneId
 import java.time.format.TextStyle
 import java.util.*
+import com.example.systemaplikacia100.ui.screens.TrainingWidgetProvider
+
 
 /**
  * Dátová trieda reprezentujúca jeden tréningový termín.
@@ -306,6 +308,8 @@ fun userScreen(
                                             currentUser?.uid ?: "",
                                             context
                                         )
+
+
                                         // 2) Lokálne zníženie bodov
                                         //userPoints = (userPoints ?: 0L) - session.priceInPoints
                                         // 2) PO PRIHLÁSENÍ RE-LOAD BODY Z FIRESTORE
