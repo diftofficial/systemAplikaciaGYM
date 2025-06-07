@@ -2,7 +2,10 @@
 
 package com.example.systemaplikacia100.ui.screens
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -676,5 +679,13 @@ suspend fun handleJoinSession(
     batch.commit().await()
 
     Toast.makeText(context, "Prihlásenie prebehlo úspešne!", Toast.LENGTH_SHORT).show()
+
+    val awm = AppWidgetManager.getInstance(context)
+    val ids = awm.getAppWidgetIds(ComponentName(context, TrainingWidgetProvider::class.java))
+    val updateIntent = Intent(context, TrainingWidgetProvider::class.java).apply {
+        action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+    }
+    context.sendBroadcast(updateIntent)
 
 }

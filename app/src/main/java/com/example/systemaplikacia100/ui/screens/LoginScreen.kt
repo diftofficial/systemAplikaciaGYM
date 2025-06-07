@@ -1,5 +1,8 @@
 package com.example.systemaplikacia100.ui.screens
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,6 +13,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -30,6 +34,7 @@ fun LoginScreen(
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     val uiState: AuthUiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     // Po úspešnom login-e presmerujeme na "splash"
     LaunchedEffect(uiState.isSuccess) {
@@ -40,6 +45,13 @@ fun LoginScreen(
             }
             viewModel.resetState()
         }
+        val awm = AppWidgetManager.getInstance(context)
+        val ids = awm.getAppWidgetIds(ComponentName(context, TrainingWidgetProvider::class.java))
+        val updateIntent = Intent(context, TrainingWidgetProvider::class.java).apply {
+            action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+        }
+        context.sendBroadcast(updateIntent)
     }
 
     Box(
